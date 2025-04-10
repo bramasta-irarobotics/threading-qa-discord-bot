@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: discord-bot
+    env: python
+    repo: https://github.com/bramasta-irarobotics/threading-qa-discord-bot.git
+    branch: main
+    startCommand: python threaded_qa_bot.py
+    envVars:
+      - key: DISCORD_BOT_TOKEN
+        sync: false
