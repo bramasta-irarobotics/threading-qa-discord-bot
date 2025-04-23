@@ -4,6 +4,8 @@ from discord.ext import commands
 from enum import Enum
 from data.categories import CATEGORY_TO_CHANNEL
 
+@app_commands.default_permissions(discord.Permissions(administrator=True))
+@app_commands.checks.has_permissions(administrator=True)
 async def get_channel_ids_command(interaction: discord.Interaction):
     forum_channels = [
         channel for channel in interaction.guild.channels
