@@ -35,9 +35,9 @@ async def ask_command(interaction: discord.Interaction, question: str, category:
         await interaction.response.send_message(f"✅ Pertanyaan kamu dipost di: {post.thread.mention}", ephemeral=True)
 
         await interaction.channel.send(
-            f"📣 Pertanyaan baru dari {interaction.user.mention} di kategori `{category.name}`!\n"
+            f"📣 @everyone Pertanyaan baru dari {interaction.user.mention} di kategori `{category.name}`!\n"
             f":question: Q: **`{question}`**\n\n"
-            f"🔗 Lihat thread-nya: {post.thread.mention}"
+            f"🔗 Lihat thread: {post.thread.mention}"
         )
 
     except Exception as e:
