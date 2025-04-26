@@ -1,6 +1,6 @@
 import discord
-
-ANNOUNCEMENT_CHANNEL_ID = 1359738837227798548
+from data.all_channel_ids import Channel_IDs
+ANNOUNCEMENT_CHANNEL_ID = Channel_IDs.ask_or_search.value
 
 async def handle_reaction_add(bot, payload):
     if payload.user_id == bot.user.id:
@@ -21,13 +21,34 @@ async def handle_reaction_add(bot, payload):
 
     message = await channel.fetch_message(payload.message_id)
     forum = channel.parent
-    tag = discord.utils.get(forum.available_tags, name="Answered")
+    
+    answered_tag = discord.utils.get(forum.available_tags, name="Answered")
 
-    if tag is None:
+    if not answered_tag:
         return
+        
+    not_answered_tag = discord.utils.get(forum.available_tags, name="Unanswered")
 
-    await channel.edit(archived=False, locked=False, applied_tags=[tag])
-    await channel.send(f"✅ Jawaban oleh {message.author.mention} telah disetujui oleh {member.mention}:\n{message.content}")
+    # Ambil tag-tag lama
+    existing_tags = channel.applied_tags
+        
+    # Tambahkan "Answered" jika belum ada
+    if answered_tag not in existing_tags:
+        existing_tags.append(answered_tag)
+
+    # Hapus "Not Answered" jika ada
+    if not_answered_tag in existing_tags:
+        existing_tags.remove(not_answered_tag)
+        
+    await channel.edit(
+        archived=False,
+        locked=False,
+        applied_tags=existing_tags
+    )
+    
+    await channel.send(
+        f"✅ Jawaban oleh {message.author.mention} telah disetujui oleh {member.mention}:\n{message.content}"
+    )
 
     announcement_channel = bot.get_channel(ANNOUNCEMENT_CHANNEL_ID)
     if announcement_channel:

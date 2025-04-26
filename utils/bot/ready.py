@@ -1,5 +1,6 @@
 import discord
-ANNOUNCEMENT_CHANNEL_ID = 1364799478204207157
+from data.all_channel_ids import Channel_IDs
+ANNOUNCEMENT_CHANNEL_ID = Channel_IDs.bot_status.value
 
 async def on_ready_event(bot):
     print(f"✅ Logged in as {bot.user} (ID: {bot.user.id})")

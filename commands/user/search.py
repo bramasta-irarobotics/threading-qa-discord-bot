@@ -1,21 +1,20 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from utils.bot.bot_setup import bot
-from data.categories import CATEGORY_TO_CHANNEL
+from data.all_channel_ids import Channel_IDs
+forum_id = Channel_IDs.discussion_threads.value
 
 @app_commands.describe(keyword="Keyword yang ingin dicari")
 async def search_command(interaction: discord.Interaction, keyword: str):
     await interaction.response.defer(ephemeral=True, thinking=True)
 
     results = []
-    for forum_id in CATEGORY_TO_CHANNEL.values():
-        forum = bot.get_channel(forum_id)
-        if not isinstance(forum, discord.ForumChannel):
-            continue
-        for thread in forum.threads:
-            if keyword.lower() in thread.name.lower():
-                results.append(thread)
+    forum = interaction.client.get_channel(forum_id)
+    if not isinstance(forum, discord.ForumChannel):
+        await interaction.followup.send(f"❌ Channel yang dipilih bukan forum")
+    for thread in forum.threads:
+        if keyword.lower() in thread.name.lower():
+            results.append(thread)
 
     if not results:
         await interaction.followup.send(f"❌ Tidak ditemukan pertanyaan dengan keyword: `{keyword}`", ephemeral=True)
