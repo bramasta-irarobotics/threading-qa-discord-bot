@@ -24,22 +24,26 @@ async def autocomplete_tags(
     keyword="Keyword yang ingin dicari",
     tag1="Tag pertama (opsional)",
     tag2="Tag kedua (opsional)",
-    tag3="Tag ketiga (opsional)"
+    tag3="Tag ketiga (opsional)",
+    tag4="Tag keempat (opsional)",
+    tag5="Tag kelima (opsional)",
 )
-@app_commands.autocomplete(tag1=autocomplete_tags, tag2=autocomplete_tags, tag3=autocomplete_tags)
+@app_commands.autocomplete(tag1=autocomplete_tags, tag2=autocomplete_tags, tag3=autocomplete_tags, tag4=autocomplete_tags, tag5=autocomplete_tags)
 async def search_command(
     interaction: discord.Interaction, 
     keyword: str,
     tag1: str = None,
     tag2: str = None,
-    tag3: str = None):
+    tag3: str = None,
+    tag4: str = None,
+    tag5: str = None):
     
     await interaction.response.defer(ephemeral=True, thinking=True)
 
     results = []
     forum = interaction.client.get_channel(forum_id)
     
-    tag_names = {t for t in [tag1, tag2, tag3] if t}
+    tag_names = {t for t in [tag1, tag2, tag3, tag4, tag5] if t}
     matched_tag_ids = {tag.id for tag in forum.available_tags if tag.name in tag_names}
 
     if not isinstance(forum, discord.ForumChannel):
