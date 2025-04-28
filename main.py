@@ -11,7 +11,7 @@ load_dotenv()
 from utils.bot.bot_setup import bot
 
 # Import command modules
-from commands.user.ask import ask_command
+from commands.user.discuss import discuss_command
 from commands.user.search import search_command
 from commands.user.ping import ping_command
 from commands.admin.get_channel_ids_forum import get_channel_ids_forum_command
@@ -26,7 +26,7 @@ from events.forum.reaction_add import handle_reaction_add
 from utils.bot.ready import on_ready_event
 
 # Register slash commands for user
-bot.tree.command(name="discuss", description="Ajukan pertanyaan atau mulai diskusi baru")(ask_command)
+bot.tree.command(name="discuss", description="Ajukan pertanyaan atau mulai diskusi baru")(discuss_command)
 bot.tree.command(name="search", description="Cari pertanyaan berdasarkan keyword (judul thread)")(search_command)
 bot.tree.command(name="ping", description="Ping test")(ping_command)
 

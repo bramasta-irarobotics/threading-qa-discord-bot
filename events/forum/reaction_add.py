@@ -58,7 +58,7 @@ async def handle_reaction_add(bot, payload):
         await announcement_channel.send(
             f"📌 Thread oleh {questioner.mention} di kategori `{forum.name}` telah **terjawab**!\n"
             f"✅ Jawaban telah divalidasi oleh {member.mention}.\n"
-            f":question: Q: **`{question}`**\n"
-            f":speech_balloon: A: **`{message.content}`**\n\n"
+            f":question: Q: **{question}**\n"
+            f":speech_balloon: A: **{message.content}**\n\n"
             f"🔗 Lihat thread: {channel.mention}"
         )
