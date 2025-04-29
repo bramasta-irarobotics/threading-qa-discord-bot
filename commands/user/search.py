@@ -2,80 +2,104 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from data.all_channel_ids import Channel_IDs
-from utils.function.autocomplete import autocomplete_tags
-from utils.function.autocomplete import autocomplete_tags_filtered
+from utils.function.autocomplete import hashtags
+from utils.function.autocomplete import hashtags_filtered
 forum_id = Channel_IDs.discussion_threads.value
 
+def count_common_items(list1, list2):
+    """
+    Counts the number of common items between two lists, considering duplicates.
+
+    Args:
+        list1: The first list.
+        list2: The second list.
+
+    Returns:
+        The number of common items.
+    """
+    count = 0
+    temp_list2 = list2[:]  # Create a copy to avoid modifying the original list
+    for item in list1:
+        if item in temp_list2:
+            count += 1
+            temp_list2.remove(item)  # Remove the matched item to handle duplicates correctly
+    return count
+    
 # Slash command utama
 @app_commands.describe(
     keyword="Keyword yang ingin dicari",
-    tag1="Tag pertama (opsional)",
-    tag2="Tag kedua (opsional)",
-    tag3="Tag ketiga (opsional)",
-    tag4="Tag keempat (opsional)",
-    tag5="Tag kelima (opsional)",
+    device="Tag device",
+    software="Tag software",
+    topic="Tag topic",
+    additional1="(opsional)",
+    additional2="(opsional)"
 )
-@app_commands.autocomplete(tag1=autocomplete_tags, tag2=autocomplete_tags_filtered("⚙️","tag1"), tag3=autocomplete_tags, tag4=autocomplete_tags, tag5=autocomplete_tags)
+@app_commands.autocomplete(
+    device=hashtags("device"),
+    software=hashtags_filtered("software","device"),
+    topic=hashtags("topic")
+)
 async def search_command(
     interaction: discord.Interaction, 
     keyword: str,
-    tag1: str = None,
-    tag2: str = None,
-    tag3: str = None,
-    tag4: str = None,
-    tag5: str = None):
+    device: str = None,
+    software: str = None,
+    topic: str = None,
+    additional1: str = None,
+    additional2: str = None):
     
     await interaction.response.defer(ephemeral=True, thinking=True)
 
     results = []
+    results_matchedcount = []
     forum = interaction.client.get_channel(forum_id)
     
-    tag_names = {t for t in [tag1, tag2, tag3, tag4, tag5] if t}
-    matched_tag_ids = {tag.id for tag in forum.available_tags if tag.name in tag_names}
+    hashtags_filter = []
+    if device is not None:
+        hashtags_filter.append(device)
+    if software is not None:
+        hashtags_filter.append(software)
+    if topic is not None:
+        hashtags_filter.append(topic)
+    if additional1 is not None:
+        hashtags_filter.append(additional1)
+    if additional2 is not None:
+        hashtags_filter.append(additional2)
 
     if not isinstance(forum, discord.ForumChannel):
         await interaction.followup.send(f"❌ Channel yang dipilih bukan forum")
-    for i in range(5,-1,-1):
-        for thread in forum.threads:
-            if keyword.lower() in thread.name.lower():
-                thread_tag_ids = {tag.id for tag in thread.applied_tags}
-                common_tags = {id for id in thread_tag_ids if id in matched_tag_ids}
-                if len(common_tags)==i:
-                    if not thread in results:
-                        results.append(thread)
-                
+       
+    for thread in forum.threads:
+        starter_message = await thread.fetch_message(thread.id)
+        question = starter_message.content.split("bertanya:\n", 1)[1]
+        question_hashtags_raw = question.split("\n#", 1)[1]
+        question_hashtags = question_hashtags_raw.split(" #")
+        matched_hashtags_count = count_common_items(question_hashtags,hashtags_filter)    
+        if keyword.lower() in question.lower():
+            if not thread in results:
+                results.append(thread)    
+                results_matchedcount.append(matched_hashtags_count)
+
+    results_sorted = [thread for count, thread in sorted(zip(results_matchedcount, results), key=lambda pair: pair[0], reverse=True)]
+         
     if not results:
         await interaction.followup.send("❌ Tidak ditemukan thread serupa", ephemeral=True)
         return
     
-    hasil = f"Keyword: **{keyword}**\nTag:"
-    
-    first_iteration = True
-    for tag in tag_names:
-        if first_iteration:
-            hasil += f" `{tag}`"
-        else:
-            hasil += f", `{tag}`"
-        first_iteration = False
+    hasil = f"Keyword: **{keyword}**\n"
+    hasil += f"Tag: #{device} #{software} #{topic}"
+    if additional1 is not None:
+        hasil += f" #{additional1}"
+    if additional2 is not None:
+        hasil += f" #{additional2}"
     hasil += "\n"
+    
     hasil += f"🔍 Hasil pencarian thread serupa:\n"
     
-    for t in results[:10]:
-        hasil += f"- **{t.name}**\n"
-        hasil += f"  Tag:"
-        t_tag = {tag.name for tag in t.applied_tags}
-        first_iteration = True
-        for tag in t_tag:
-            if first_iteration:
-                hasil += f" `{tag}`"
-            else:
-                hasil += f", `{tag}`"
-            first_iteration = False
-        hasil += f"\n  Link thread: {t.mention}\n\n"
-        
-    #tag_emoji = {tag.emoji.name for tag in forum.available_tags if tag.name in tag_names}
-    #for emoji in tag_emoji:
-        #print(emoji == "⚙️")
-        #hasil += f"{emoji}"
-
+    for t in results_sorted[:10]:
+        hasil += f"- {t.mention}\n"
+        starter_message = await t.fetch_message(t.id)
+        question = starter_message.content.split("bertanya:\n", 1)[1]
+        hasil += f"{question}\n\n"
+    
     await interaction.followup.send(hasil, ephemeral=True)
