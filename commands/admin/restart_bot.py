@@ -14,5 +14,6 @@ async def restart_bot_command(interaction: discord.Interaction):
 
     python_exe = r"D:/Testing-Bot-TestOnly/threading-qa-discord-bot/env/Scripts/python.exe"
     main_script = r"D:/Testing-Bot-TestOnly/threading-qa-discord-bot/main.py"
-
+    
+    os.system('cls')
     os.execv(python_exe, [python_exe, main_script])

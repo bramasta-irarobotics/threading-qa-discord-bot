@@ -71,7 +71,7 @@ async def search_command(
        
     for thread in forum.threads:
         starter_message = await thread.fetch_message(thread.id)
-        question = starter_message.content.split("bertanya:\n", 1)[1]
+        question = starter_message.content.split(":\n", 1)[1]
         question_hashtags_raw = question.split("\n#", 1)[1]
         question_hashtags = question_hashtags_raw.split(" #")
         matched_hashtags_count = count_common_items(question_hashtags,hashtags_filter)    
@@ -99,7 +99,7 @@ async def search_command(
     for t in results_sorted[:10]:
         hasil += f"- {t.mention}\n"
         starter_message = await t.fetch_message(t.id)
-        question = starter_message.content.split("bertanya:\n", 1)[1]
+        question = starter_message.content.split(":\n", 1)[1]
         hasil += f"{question}\n\n"
     
     await interaction.followup.send(hasil, ephemeral=True)
